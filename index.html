@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Country Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0f1117;
+      color: #e8e6df;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      color: #f0ebe0;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: #7a7870;
+      margin-top: 0.4rem;
+      font-size: 1rem;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .search-row input {
+      flex: 1;
+      padding: 0.75rem 1.1rem;
+      border-radius: 8px;
+      border: 1px solid #2e2d2a;
+      background: #1a1c22;
+      color: #e8e6df;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-row input:focus { border-color: #c8a96e; }
+    .search-row input::placeholder { color: #4a4845; }
+
+    .search-row button {
+      padding: 0.75rem 1.4rem;
+      border-radius: 8px;
+      border: none;
+      background: #c8a96e;
+      color: #0f1117;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .search-row button:hover { background: #d9bc85; }
+    .search-row button:active { transform: scale(0.97); }
+
+    #message {
+      text-align: center;
+      color: #5a5855;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      min-height: 1.4rem;
+    }
+
+    #card {
+      display: none;
+      max-width: 720px;
+      margin: 0 auto;
+      background: #1a1c22;
+      border: 1px solid #2e2d2a;
+      border-radius: 16px;
+      overflow: hidden;
+      animation: fadeUp 0.35s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.6rem 1.8rem;
+      border-bottom: 1px solid #2e2d2a;
+    }
+
+    .flag {
+      font-size: 3.8rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .card-top-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      color: #f0ebe0;
+    }
+
+    .card-top-text .official {
+      font-size: 0.85rem;
+      color: #7a7870;
+      margin-top: 3px;
+    }
+
+    .card-top-text .region-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: #252830;
+      color: #c8a96e;
+      font-size: 0.78rem;
+      font-weight: 500;
+      border: 1px solid #3a3830;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0;
+    }
+
+    .fact {
+      padding: 1.1rem 1.8rem;
+      border-bottom: 1px solid #2e2d2a;
+      border-right: 1px solid #2e2d2a;
+    }
+
+    .fact:last-child, .fact:nth-child(even):last-child {
+      border-right: none;
+    }
+
+    .fact-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #5a5855;
+      margin-bottom: 4px;
+    }
+
+    .fact-value {
+      font-size: 1rem;
+      color: #e8e6df;
+      font-weight: 500;
+    }
+
+    .card-map-link {
+      display: block;
+      text-align: center;
+      padding: 1rem;
+      color: #c8a96e;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background 0.15s;
+      border-top: 1px solid #2e2d2a;
+    }
+
+    .card-map-link:hover { background: #252830; }
+
+    .neighbors {
+      padding: 1rem 1.8rem;
+      border-top: 1px solid #2e2d2a;
+    }
+
+    .neighbors .fact-label {
+      margin-bottom: 8px;
+    }
+
+    .neighbor-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .neighbor-tag {
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: #252830;
+      border: 1px solid #2e2d2a;
+      color: #b0ada6;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .neighbor-tag:hover { border-color: #c8a96e; color: #c8a96e; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Country Explorer</h1>
+  <p>Search any country to discover facts about it</p>
+</header>
+
+<div class="search-row">
+  <input type="text" id="searchInput" placeholder="e.g. Japan, Brazil, Latvia…" />
+  <button onclick="searchCountry()">Search</button>
+</div>
+
+<div id="message">Type a country name and hit Search.</div>
+<div id="card"></div>
+
+<script>
+  const input = document.getElementById('searchInput');
+  const msg   = document.getElementById('message');
+  const card  = document.getElementById('card');
+
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') searchCountry(); });
+
+  async function searchCountry(name) {
+    const query = (name || input.value).trim();
+    if (!query) return;
+    if (!name) input.value = query;
+
+    msg.textContent = 'Searching…';
+    card.style.display = 'none';
+
+    try {
+      const res  = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(query)}?fullText=false`);
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      renderCard(data[0]);
+    } catch {
+      msg.textContent = `No country found for "${query}". Try a different spelling.`;
+    }
+  }
+
+  function fmt(n) {
+    if (!n) return '—';
+    return Number(n).toLocaleString();
+  }
+
+  function getCurrencies(obj) {
+    if (!obj) return '—';
+    return Object.values(obj).map(c => `${c.name} (${c.symbol || '?'})`).join(', ');
+  }
+
+  function getLanguages(obj) {
+    if (!obj) return '—';
+    return Object.values(obj).join(', ');
+  }
+
+  function getCapital(arr) {
+    return arr && arr.length ? arr[0] : '—';
+  }
+
+  async function getBorderNames(codes) {
+    if (!codes || !codes.length) return [];
+    try {
+      const res  = await fetch(`https://restcountries.com/v3.1/alpha?codes=${codes.join(',')}&fields=name`);
+      const data = await res.json();
+      return data.map(c => c.name.common);
+    } catch { return codes; }
+  }
+
+  async function renderCard(c) {
+    const flag       = c.flag || '🌐';
+    const name       = c.name.common;
+    const official   = c.name.official !== name ? c.name.official : '';
+    const region     = [c.subregion, c.region].filter(Boolean).join(' · ');
+    const capital    = getCapital(c.capital);
+    const pop        = fmt(c.population);
+    const area       = c.area ? fmt(Math.round(c.area)) + ' km²' : '—';
+    const currencies = getCurrencies(c.currencies);
+    const languages  = getLanguages(c.languages);
+    const callingCode = c.idd && c.idd.root ? (c.idd.root + (c.idd.suffixes ? c.idd.suffixes[0] : '')) : '—';
+    const tld        = c.tld ? c.tld[0] : '—';
+    const driving    = c.car && c.car.side ? c.car.side : '—';
+    const mapUrl     = c.maps && c.maps.googleMaps ? c.maps.googleMaps : null;
+
+    const borderNames = await getBorderNames(c.borders);
+
+    const neighborsHTML = borderNames.length
+      ? `<div class="neighbors">
+           <div class="fact-label">Neighboring countries</div>
+           <div class="neighbor-tags">
+             ${borderNames.map(n => `<span class="neighbor-tag" onclick="searchCountry('${n}')">${n}</span>`).join('')}
+           </div>
+         </div>`
+      : `<div class="neighbors"><div class="fact-label">Neighboring countries</div><div class="fact-value" style="color:#5a5855">None (island nation or isolated)</div></div>`;
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="flag">${flag}</div>
+        <div class="card-top-text">
+          <h2>${name}</h2>
+          ${official ? `<div class="official">${official}</div>` : ''}
+          <span class="region-badge">${region}</span>
+        </div>
+      </div>
+      <div class="card-grid">
+        <div class="fact"><div class="fact-label">Capital</div><div class="fact-value">${capital}</div></div>
+        <div class="fact"><div class="fact-label">Population</div><div class="fact-value">${pop}</div></div>
+        <div class="fact"><div class="fact-label">Area</div><div class="fact-value">${area}</div></div>
+        <div class="fact"><div class="fact-label">Currency</div><div class="fact-value">${currencies}</div></div>
+        <div class="fact"><div class="fact-label">Languages</div><div class="fact-value">${languages}</div></div>
+        <div class="fact"><div class="fact-label">Calling code</div><div class="fact-value">${callingCode}</div></div>
+        <div class="fact"><div class="fact-label">Internet TLD</div><div class="fact-value">${tld}</div></div>
+        <div class="fact"><div class="fact-label">Drives on the</div><div class="fact-value">${driving} side</div></div>
+      </div>
+      ${neighborsHTML}
+      ${mapUrl ? `<a class="card-map-link" href="${mapUrl}" target="_blank">Open on Google Maps ↗</a>` : ''}
+    `;
+
+    msg.textContent = '';
+    card.style.display = 'block';
+  }
+</script>
+</body>
+</html>.
